@@ -1,0 +1,126 @@
+.app-container {
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .app-title {
+    text-align: center;
+    color: #333;
+  }
+
+  .total-score {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-weight: bold;
+  }
+
+  .warning-message {
+    color: red;
+    font-weight: bold;
+  }
+
+  .add-player {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-field {
+    flex: 1;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .add-button {
+    padding: 8px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .reset-button {
+    margin-top: 20px;
+    padding: 8px 20px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .reset-confirmation {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+  }
+
+  .confirm-button,
+  .cancel-button {
+    margin-top: 10px;
+    padding: 8px 20px;
+    margin-right: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .divider {
+    margin-top: 20px;
+    border: none;
+    border-top: 1px solid #ccc;
+  }
+
+  .player-card {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+  }
+
+  .player-name {
+    color: #333;
+  }
+
+  .score-section {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+  }
+
+  .score-display {
+    margin-right: 10px;
+  }
+
+  .score-input {
+    width: 80px;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .apply-button {
+    padding: 8px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
