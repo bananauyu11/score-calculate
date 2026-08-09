@@ -1,0 +1,9 @@
+{
+  "name": "競馬 収支管理",
+  "short_name": "収支管理",
+  "description": "競馬の収支をCSVで取り込み、日別・月間・年間で確認できるアプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669"
+}
