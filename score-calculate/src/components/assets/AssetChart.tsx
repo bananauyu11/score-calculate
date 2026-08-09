@@ -57,9 +57,19 @@ export default function AssetChart({
       })),
     [accounts, entries, year]
   );
+  const yearlySeries = useMemo(() => yearlyNetWorthSeries(accounts, entries), [accounts, entries]);
   const yearlyData = useMemo(
-    () => yearlyNetWorthSeries(accounts, entries).map((d) => ({ ...d, label: `${d.year}年` })),
-    [accounts, entries]
+    () => yearlySeries.map((d) => ({ ...d, label: `${d.year}年` })),
+    [yearlySeries]
+  );
+  const yearlyTable = useMemo(
+    () =>
+      yearlySeries.map((d, i) => ({
+        year: d.year,
+        total: d.total,
+        yoy: i === 0 ? null : d.total - yearlySeries[i - 1].total,
+      })),
+    [yearlySeries]
   );
   const historyData = useMemo(
     () => historySeries(accounts, entries),
@@ -174,6 +184,35 @@ export default function AssetChart({
         {mode === "yearly" && "年末時点（今年は本日時点）での資産合計です。"}
         {mode === "history" && "記録した日ごとの資産合計の推移です。"}
       </p>
+
+      {mode === "yearly" && (
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
+          <table className="w-full min-w-[280px] text-sm">
+            <thead className="bg-neutral-50 text-neutral-500 dark:bg-neutral-900">
+              <tr>
+                <th className="p-2 text-left">年</th>
+                <th className="p-2 text-right">金額</th>
+                <th className="p-2 text-right">前年比</th>
+              </tr>
+            </thead>
+            <tbody>
+              {yearlyTable.map((row) => (
+                <tr key={row.year} className="border-t border-neutral-100 dark:border-neutral-800">
+                  <td className="p-2">{row.year}</td>
+                  <td className="p-2 text-right tabular-nums">{yen(row.total)}</td>
+                  <td
+                    className={`p-2 text-right tabular-nums ${
+                      row.yoy === null ? "text-neutral-400" : row.yoy >= 0 ? "text-emerald-600" : "text-red-600"
+                    }`}
+                  >
+                    {row.yoy === null ? "-" : `${row.yoy >= 0 ? "+" : ""}${yen(row.yoy)}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

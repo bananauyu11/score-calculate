@@ -20,8 +20,33 @@ import ExpenseMonthlyView from "@/components/expenses/ExpenseMonthlyView";
 import ExpenseYearlyView from "@/components/expenses/ExpenseYearlyView";
 import ExpenseChart from "@/components/expenses/ExpenseChart";
 
-type Section = "assets" | "expenses";
-type AssetTab = "list" | "chart";
+import { FixedCostItem, FixedCostKind } from "@/lib/budget/types";
+import {
+  loadFixedCosts,
+  loadTakeHomePay,
+  saveFixedCosts,
+  saveTakeHomePay,
+} from "@/lib/budget/storage";
+import FixedCostsPanel from "@/components/budget/FixedCostsPanel";
+import BudgetSummaryCard from "@/components/budget/BudgetSummaryCard";
+
+import { CardPayment } from "@/lib/cards/types";
+import {
+  loadCardPayments,
+  loadCashOnHand,
+  saveCardPayments,
+  saveCashOnHand,
+} from "@/lib/cards/storage";
+import CardPaymentsPanel from "@/components/cards/CardPaymentsPanel";
+
+import { Goal, GoalCategory } from "@/lib/goals/types";
+import { loadGoals, saveGoals } from "@/lib/goals/storage";
+import { AssetCategory } from "@/lib/assets/types";
+import GoalForm from "@/components/goals/GoalForm";
+import GoalsPanel from "@/components/goals/GoalsPanel";
+
+type Section = "assets" | "expenses" | "budget" | "cards";
+type AssetTab = "list" | "goals" | "chart";
 type ExpenseTab = "daily" | "monthly" | "yearly" | "chart";
 
 export default function AssetsPage() {
@@ -31,6 +56,11 @@ export default function AssetsPage() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<string[]>([]);
   const [incomeCategories, setIncomeCategories] = useState<string[]>([]);
+  const [fixedCosts, setFixedCosts] = useState<FixedCostItem[]>([]);
+  const [takeHomePay, setTakeHomePay] = useState(0);
+  const [cardPayments, setCardPayments] = useState<CardPayment[]>([]);
+  const [cashOnHand, setCashOnHand] = useState(0);
+  const [goals, setGoals] = useState<Goal[]>([]);
 
   const [section, setSection] = useState<Section>("assets");
   const [assetTab, setAssetTab] = useState<AssetTab>("list");
@@ -42,6 +72,11 @@ export default function AssetsPage() {
     setExpenses(loadExpenses());
     setExpenseCategories(loadCategories("expense"));
     setIncomeCategories(loadCategories("income"));
+    setFixedCosts(loadFixedCosts());
+    setTakeHomePay(loadTakeHomePay());
+    setCardPayments(loadCardPayments());
+    setCashOnHand(loadCashOnHand());
+    setGoals(loadGoals());
     setLoaded(true);
   }, []);
 
@@ -132,6 +167,81 @@ export default function AssetsPage() {
     }
   };
 
+  const handleAddFixedCost = (name: string, amount: number, kind: FixedCostKind) => {
+    const item: FixedCostItem = { id: genId(), name, amount, kind };
+    const next = [...fixedCosts, item];
+    setFixedCosts(next);
+    saveFixedCosts(next);
+  };
+
+  const handleUpdateFixedCost = (id: string, patch: Partial<Omit<FixedCostItem, "id">>) => {
+    const next = fixedCosts.map((i) => (i.id === id ? { ...i, ...patch } : i));
+    setFixedCosts(next);
+    saveFixedCosts(next);
+  };
+
+  const handleDeleteFixedCost = (id: string) => {
+    const next = fixedCosts.filter((i) => i.id !== id);
+    setFixedCosts(next);
+    saveFixedCosts(next);
+  };
+
+  const handleChangeTakeHomePay = (value: number) => {
+    setTakeHomePay(value);
+    saveTakeHomePay(value);
+  };
+
+  const handleAddCardPayment = (card: string, amount: number, debitDay: number) => {
+    const item: CardPayment = { id: genId(), card, amount, debitDay };
+    const next = [...cardPayments, item];
+    setCardPayments(next);
+    saveCardPayments(next);
+  };
+
+  const handleUpdateCardPayment = (id: string, patch: Partial<Omit<CardPayment, "id">>) => {
+    const next = cardPayments.map((i) => (i.id === id ? { ...i, ...patch } : i));
+    setCardPayments(next);
+    saveCardPayments(next);
+  };
+
+  const handleDeleteCardPayment = (id: string) => {
+    const next = cardPayments.filter((i) => i.id !== id);
+    setCardPayments(next);
+    saveCardPayments(next);
+  };
+
+  const handleChangeCashOnHand = (value: number) => {
+    setCashOnHand(value);
+    saveCashOnHand(value);
+  };
+
+  const handleAddGoal = (data: {
+    name: string;
+    category: GoalCategory;
+    linkedAssetCategory?: AssetCategory;
+    targetAmount: number;
+    currentAmount: number;
+    deadlineYear?: number;
+    note?: string;
+  }) => {
+    const goal: Goal = { id: genId(), ...data };
+    const next = [...goals, goal];
+    setGoals(next);
+    saveGoals(next);
+  };
+
+  const handleUpdateGoalCurrent = (id: string, current: number) => {
+    const next = goals.map((g) => (g.id === id ? { ...g, currentAmount: current } : g));
+    setGoals(next);
+    saveGoals(next);
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    const next = goals.filter((g) => g.id !== id);
+    setGoals(next);
+    saveGoals(next);
+  };
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-4 p-4 pb-12">
       <header className="flex flex-col gap-3">
@@ -139,28 +249,30 @@ export default function AssetsPage() {
         <div>
           <h1 className="text-xl font-bold">資産管理</h1>
           <p className="text-sm text-neutral-500">
-            現金・預金・証券などの資産の増減と、支出・収入の明細を記録・グラフで確認できます。
+            現金・預金・証券などの資産の増減と、支出・収入の明細、固定費・目標・カード引落を記録・グラフで確認できます。
           </p>
         </div>
       </header>
 
       <nav className="flex gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-900">
-        <button
-          onClick={() => setSection("assets")}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
-            section === "assets" ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
-          }`}
-        >
-          資産
-        </button>
-        <button
-          onClick={() => setSection("expenses")}
-          className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
-            section === "expenses" ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
-          }`}
-        >
-          収支
-        </button>
+        {(
+          [
+            { key: "assets", label: "資産" },
+            { key: "expenses", label: "収支" },
+            { key: "budget", label: "固定費" },
+            { key: "cards", label: "カード" },
+          ] as { key: Section; label: string }[]
+        ).map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setSection(s.key)}
+            className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
+              section === s.key ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
       </nav>
 
       {!loaded ? (
@@ -179,6 +291,14 @@ export default function AssetsPage() {
               口座一覧
             </button>
             <button
+              onClick={() => setAssetTab("goals")}
+              className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
+                assetTab === "goals" ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
+              }`}
+            >
+              目標
+            </button>
+            <button
               onClick={() => setAssetTab("chart")}
               className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
                 assetTab === "chart" ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
@@ -188,7 +308,7 @@ export default function AssetsPage() {
             </button>
           </div>
 
-          {assetTab === "list" ? (
+          {assetTab === "list" && (
             <div className="flex flex-col gap-3">
               <AccountForm onAdd={handleAddAccount} />
               <AccountsPanel
@@ -199,11 +319,22 @@ export default function AssetsPage() {
                 onDeleteAccount={handleDeleteAccount}
               />
             </div>
-          ) : (
-            <AssetChart accounts={accounts} entries={entries} />
           )}
+          {assetTab === "goals" && (
+            <div className="flex flex-col gap-3">
+              <GoalForm accounts={accounts} entries={entries} onAdd={handleAddGoal} />
+              <GoalsPanel
+                goals={goals}
+                accounts={accounts}
+                entries={entries}
+                onUpdateCurrent={handleUpdateGoalCurrent}
+                onDelete={handleDeleteGoal}
+              />
+            </div>
+          )}
+          {assetTab === "chart" && <AssetChart accounts={accounts} entries={entries} />}
         </div>
-      ) : (
+      ) : section === "expenses" ? (
         <div className="flex flex-col gap-4">
           <ExpenseImportBar
             records={expenses}
@@ -272,6 +403,29 @@ export default function AssetsPage() {
             />
           )}
         </div>
+      ) : section === "budget" ? (
+        <div className="flex flex-col gap-4">
+          <BudgetSummaryCard
+            items={fixedCosts}
+            takeHomePay={takeHomePay}
+            onChangeTakeHomePay={handleChangeTakeHomePay}
+          />
+          <FixedCostsPanel
+            items={fixedCosts}
+            onAdd={handleAddFixedCost}
+            onUpdate={handleUpdateFixedCost}
+            onDelete={handleDeleteFixedCost}
+          />
+        </div>
+      ) : (
+        <CardPaymentsPanel
+          items={cardPayments}
+          cashOnHand={cashOnHand}
+          onAdd={handleAddCardPayment}
+          onUpdate={handleUpdateCardPayment}
+          onDelete={handleDeleteCardPayment}
+          onChangeCashOnHand={handleChangeCashOnHand}
+        />
       )}
     </main>
   );
