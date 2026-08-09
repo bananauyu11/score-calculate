@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 競馬 収支管理
 
-## Getting Started
+競馬の購入・払戻データをCSVで取り込み、**日別・月間（競馬場ごと／全体）・年間（競馬場ごと／全体）**の収支と、**月間収支グラフ**を確認できるWebアプリです。iPhoneのSafariから開いて「ホーム画面に追加」すると、アプリのように使えます（PWA）。
 
-First, run the development server:
+データは外部サーバーには送信されず、**端末のブラウザ内（localStorage）にのみ保存**されます。
+
+## 使い方
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000) を開きます。本番用ビルドは `npm run build && npm run start`。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### iPhoneでアプリのように使う
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. デプロイしたURL（またはローカルの場合はネットワーク経由のURL）をiPhoneのSafariで開く
+2. 共有ボタン → 「ホーム画面に追加」
+3. ホーム画面のアイコンから起動すると、アドレスバーなしのアプリのような画面で使えます
 
-## Learn More
+### CSVの取り込み
 
-To learn more about Next.js, take a look at the following resources:
+画面上部の「CSVを取り込む」から、下記フォーマットのCSVファイルを選択します。取り込むたびに**既存データへ追記**され、同一の賭け（日付・競馬場・R・式別・方式・買い目・購入金額・点数が一致する行）は**重複としてスキップ**されます。何回かに分けてCSVを取り込む運用を想定しています。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+サンプルCSV（実データ・実際のレース名入り）は「サンプルCSV」ボタン、または [`public/sample.csv`](./public/sample.csv) からダウンロードできます。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+「CSVを書き出す」で、現在アプリに保存されている全データをCSVとしてバックアップ・移行できます。
 
-## Deploy on Vercel
+## CSVカラム仕様
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+UTF-8、カンマ区切り、1行目はヘッダーです。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+| カラム名 | 必須 | 内容 | 例 |
+|---|---|---|---|
+| 日付 | ○ | `YYYY-MM-DD` 形式 | `2026-08-09` |
+| 競馬場 | ○ | 開催競馬場名 | `中京` |
+| R | ○ | レース番号 | `7` |
+| レース名 | - | レース名（重賞名や条件名） | `レパードステークス(GIII)` |
+| 式別 | ○ | 馬券の種類 | `馬単` `馬連` `3連複` `ワイド` など |
+| 方式 | - | 買い方 | `フォーメーション` `1軸流し` `ボックス` `通常` など |
+| 買い目 | - | 具体的な組み合わせ（任意入力） | `6→2` |
+| 購入金額 | ○ | **1点あたりの購入金額（円）** | `100` |
+| 点数 | - | 購入点数。空欄は1点として扱う | `18` |
+| オッズ | - | 単一組み合わせの場合の倍率（任意） | `27.1` |
+| 払戻金額 | - | 払戻の合計金額（円）。空欄は0円として扱う | `19470` |
+
+- 1口あたりの購入金額（購入金額）× 点数 が、そのベットの合計購入額としてアプリ側で自動計算されます。
+- 収支 = 払戻金額 − 合計購入額（アプリ側で自動計算、CSVに収支列は不要です）。
+- 同じレースに複数の買い目がある場合は、行を分けて入力してください（サンプルCSV参照）。
+
+## 画面構成
+
+- **日別**: 日付を選んで、その日の各ベットの明細と、購入額・払戻額・回収率・収支を表示
+- **月間**: 年月を選んで、全体の収支と競馬場ごとの収支を表示
+- **年間**: 年を選んで、全体の収支と競馬場ごとの収支を表示
+- **グラフ**: 年・競馬場（全体／個別）を選んで、月ごとの収支を棒グラフで表示（プラスは緑、マイナスは赤）
+
+## 技術構成
+
+- Next.js（App Router）/ React / TypeScript / Tailwind CSS
+- CSV解析: [PapaParse](https://www.papaparse.com/)
+- グラフ: [Recharts](https://recharts.org/)
+- データ保存: ブラウザの `localStorage`（サーバー・バックエンドなし）
