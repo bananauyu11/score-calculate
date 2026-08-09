@@ -10,9 +10,11 @@ import AccountForm from "@/components/assets/AccountForm";
 import AccountsPanel from "@/components/assets/AccountsPanel";
 import AssetChart from "@/components/assets/AssetChart";
 
-import { ExpenseRecord } from "@/lib/expenses/types";
+import { ExpenseRecord, TransactionType } from "@/lib/expenses/types";
 import { loadExpenses, mergeExpenses, saveExpenses } from "@/lib/expenses/storage";
+import { addCategory, loadCategories } from "@/lib/expenses/categories";
 import ExpenseImportBar from "@/components/expenses/ExpenseImportBar";
+import TransactionForm from "@/components/expenses/TransactionForm";
 import ExpenseDailyView from "@/components/expenses/ExpenseDailyView";
 import ExpenseMonthlyView from "@/components/expenses/ExpenseMonthlyView";
 import ExpenseYearlyView from "@/components/expenses/ExpenseYearlyView";
@@ -27,6 +29,8 @@ export default function AssetsPage() {
   const [accounts, setAccounts] = useState<AssetAccount[]>([]);
   const [entries, setEntries] = useState<AssetEntry[]>([]);
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<string[]>([]);
+  const [incomeCategories, setIncomeCategories] = useState<string[]>([]);
 
   const [section, setSection] = useState<Section>("assets");
   const [assetTab, setAssetTab] = useState<AssetTab>("list");
@@ -36,6 +40,8 @@ export default function AssetsPage() {
     setAccounts(loadAccounts());
     setEntries(loadEntries());
     setExpenses(loadExpenses());
+    setExpenseCategories(loadCategories("expense"));
+    setIncomeCategories(loadCategories("income"));
     setLoaded(true);
   }, []);
 
@@ -97,6 +103,35 @@ export default function AssetsPage() {
     saveExpenses([]);
   };
 
+  const handleAddTransaction = (data: {
+    date: string;
+    type: TransactionType;
+    category: string;
+    store: string;
+    amount: number;
+    method?: string;
+  }) => {
+    const record: ExpenseRecord = { id: genId(), ...data };
+    const nextExpenses = [...expenses, record];
+    setExpenses(nextExpenses);
+    saveExpenses(nextExpenses);
+  };
+
+  const handleUpdateExpenseCategory = (id: string, category: string) => {
+    const nextExpenses = expenses.map((r) => (r.id === id ? { ...r, category } : r));
+    setExpenses(nextExpenses);
+    saveExpenses(nextExpenses);
+  };
+
+  const handleAddCategory = (type: TransactionType, name: string) => {
+    const next = addCategory(type, name);
+    if (type === "expense") {
+      setExpenseCategories(next);
+    } else {
+      setIncomeCategories(next);
+    }
+  };
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-4 p-4 pb-12">
       <header className="flex flex-col gap-3">
@@ -104,7 +139,7 @@ export default function AssetsPage() {
         <div>
           <h1 className="text-xl font-bold">資産管理</h1>
           <p className="text-sm text-neutral-500">
-            現金・預金・証券などの資産の増減と、支出の明細を記録・グラフで確認できます。
+            現金・預金・証券などの資産の増減と、支出・収入の明細を記録・グラフで確認できます。
           </p>
         </div>
       </header>
@@ -124,7 +159,7 @@ export default function AssetsPage() {
             section === "expenses" ? "bg-white shadow-sm dark:bg-neutral-800" : "text-neutral-500"
           }`}
         >
-          支出
+          収支
         </button>
       </nav>
 
@@ -176,6 +211,13 @@ export default function AssetsPage() {
             onClear={handleClearExpenses}
           />
 
+          <TransactionForm
+            expenseCategories={expenseCategories}
+            incomeCategories={incomeCategories}
+            onAdd={handleAddTransaction}
+            onAddCategory={handleAddCategory}
+          />
+
           <div className="flex gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-900">
             {(
               [
@@ -199,10 +241,36 @@ export default function AssetsPage() {
             ))}
           </div>
 
-          {expenseTab === "daily" && <ExpenseDailyView records={expenses} />}
-          {expenseTab === "monthly" && <ExpenseMonthlyView records={expenses} />}
-          {expenseTab === "yearly" && <ExpenseYearlyView records={expenses} />}
-          {expenseTab === "chart" && <ExpenseChart records={expenses} />}
+          {expenseTab === "daily" && (
+            <ExpenseDailyView
+              records={expenses}
+              expenseCategories={expenseCategories}
+              incomeCategories={incomeCategories}
+              onUpdateCategory={handleUpdateExpenseCategory}
+              onAddCategory={handleAddCategory}
+            />
+          )}
+          {expenseTab === "monthly" && (
+            <ExpenseMonthlyView
+              records={expenses}
+              expenseCategories={expenseCategories}
+              incomeCategories={incomeCategories}
+            />
+          )}
+          {expenseTab === "yearly" && (
+            <ExpenseYearlyView
+              records={expenses}
+              expenseCategories={expenseCategories}
+              incomeCategories={incomeCategories}
+            />
+          )}
+          {expenseTab === "chart" && (
+            <ExpenseChart
+              records={expenses}
+              expenseCategories={expenseCategories}
+              incomeCategories={incomeCategories}
+            />
+          )}
         </div>
       )}
     </main>

@@ -1,4 +1,4 @@
-import { ExpenseRecord } from "./types";
+import { ExpenseRecord, TransactionType } from "./types";
 
 export interface ExpenseTotals {
   amount: number;
@@ -8,6 +8,21 @@ export interface ExpenseTotals {
 export function totalsOf(records: ExpenseRecord[]): ExpenseTotals {
   const amount = records.reduce((s, r) => s + r.amount, 0);
   return { amount, count: records.length };
+}
+
+export interface NetTotals {
+  expense: number;
+  income: number;
+  net: number;
+  count: number;
+}
+
+export function netTotalsOf(records: ExpenseRecord[]): NetTotals {
+  const expense = records
+    .filter((r) => r.type === "expense")
+    .reduce((s, r) => s + r.amount, 0);
+  const income = records.filter((r) => r.type === "income").reduce((s, r) => s + r.amount, 0);
+  return { expense, income, net: income - expense, count: records.length };
 }
 
 export function uniqueYears(records: ExpenseRecord[]): number[] {
@@ -38,6 +53,20 @@ export function recordsOfYear(records: ExpenseRecord[], year: number): ExpenseRe
   return records.filter((r) => r.date.startsWith(prefix));
 }
 
+export function recordsOfType(
+  records: ExpenseRecord[],
+  type: TransactionType | "all"
+): ExpenseRecord[] {
+  return type === "all" ? records : records.filter((r) => r.type === type);
+}
+
+export function recordsOfCategory(
+  records: ExpenseRecord[],
+  category: string | "all"
+): ExpenseRecord[] {
+  return category === "all" ? records : records.filter((r) => r.category === category);
+}
+
 export interface StoreTotal {
   store: string;
   totals: ExpenseTotals;
@@ -51,16 +80,33 @@ export function byStoreTotals(records: ExpenseRecord[], limit = 10): StoreTotal[
     .slice(0, limit);
 }
 
+export interface CategoryTotal {
+  category: string;
+  totals: ExpenseTotals;
+}
+
+export function byCategoryTotals(records: ExpenseRecord[]): CategoryTotal[] {
+  const categories = Array.from(new Set(records.map((r) => r.category)));
+  return categories
+    .map((category) => ({
+      category,
+      totals: totalsOf(records.filter((r) => r.category === category)),
+    }))
+    .sort((a, b) => b.totals.amount - a.totals.amount);
+}
+
 export interface MonthlyExpensePoint {
   month: number;
-  amount: number;
+  expense: number;
+  income: number;
+  net: number;
 }
 
 export function monthlySeries(records: ExpenseRecord[], year: number): MonthlyExpensePoint[] {
   const points: MonthlyExpensePoint[] = [];
   for (let m = 1; m <= 12; m++) {
-    const t = totalsOf(recordsOfMonth(records, year, m));
-    points.push({ month: m, amount: t.amount });
+    const t = netTotalsOf(recordsOfMonth(records, year, m));
+    points.push({ month: m, expense: t.expense, income: t.income, net: t.net });
   }
   return points;
 }

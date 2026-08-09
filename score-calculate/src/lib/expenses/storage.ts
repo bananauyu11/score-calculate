@@ -1,6 +1,15 @@
-import { ExpenseRecord } from "./types";
+import { ExpenseRecord, UNCATEGORIZED } from "./types";
 
 const STORAGE_KEY = "expense-records-v1";
+
+// type/category 追加前に保存されたレコードを補完する
+function migrate(record: ExpenseRecord): ExpenseRecord {
+  return {
+    ...record,
+    type: record.type ?? "expense",
+    category: record.category ?? UNCATEGORIZED,
+  };
+}
 
 export function loadExpenses(): ExpenseRecord[] {
   if (typeof window === "undefined") return [];
@@ -8,7 +17,7 @@ export function loadExpenses(): ExpenseRecord[] {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ExpenseRecord[]) : [];
+    return Array.isArray(parsed) ? (parsed as ExpenseRecord[]).map(migrate) : [];
   } catch {
     return [];
   }
