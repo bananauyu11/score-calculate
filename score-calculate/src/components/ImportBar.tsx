@@ -33,6 +33,29 @@ export default function ImportBar({ records, onImport, onClear }: Props) {
     }
   };
 
+  const handleSample = async () => {
+    try {
+      const res = await fetch("/sample.csv");
+      const text = await res.text();
+      const { records: parsed, errors } = parseCsv(text);
+
+      if (parsed.length > 0) {
+        const { added, skipped } = onImport(parsed);
+        setMessage(
+          `サンプルデータを取り込みました。${added}件追加、${skipped}件は重複のためスキップしました。`
+        );
+      } else {
+        setMessage(
+          errors.length > 0
+            ? `サンプルの取り込みに失敗しました: ${errors[0]}`
+            : "サンプルデータが見つかりませんでした。"
+        );
+      }
+    } catch {
+      setMessage("サンプルデータの取得に失敗しました。通信環境を確認してください。");
+    }
+  };
+
   const handleExport = () => {
     const csv = toCsv(records);
     const blob = new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8;" });
@@ -78,13 +101,12 @@ export default function ImportBar({ records, onImport, onClear }: Props) {
         >
           CSVを書き出す
         </button>
-        <a
-          href="/sample.csv"
-          download
+        <button
+          onClick={handleSample}
           className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-700"
         >
-          サンプルCSV
-        </a>
+          サンプルデータを試す
+        </button>
         <button
           onClick={handleClear}
           disabled={records.length === 0}
