@@ -44,9 +44,6 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-4 p-4 pb-12">
       <header>
         <h1 className="text-xl font-bold">競馬 収支管理</h1>
-        <p className="text-sm text-neutral-500">
-          CSVを取り込んで、日別・月間・年間の収支を確認できます。
-        </p>
       </header>
 
       <ImportBar records={records} onImport={handleImport} onClear={handleClear} />
