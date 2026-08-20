@@ -110,8 +110,7 @@ export default function ImportBar({ records, onImport, onClear }: Props) {
 
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <h2 className="text-lg font-bold">CSV設定</h2>
-      <p className="mt-1 text-sm text-neutral-400">登録件数: {records.length}件</p>
+      <p className="text-sm text-neutral-400">登録件数: {records.length}件</p>
 
       <div className="mt-4 flex flex-wrap gap-2">
         <PillButton
