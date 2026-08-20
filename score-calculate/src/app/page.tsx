@@ -8,6 +8,7 @@ import DailyView from "@/components/DailyView";
 import MonthlyView from "@/components/MonthlyView";
 import YearlyView from "@/components/YearlyView";
 import MonthlyChart from "@/components/MonthlyChart";
+import { ImportIcon } from "@/components/icons";
 
 type Tab = "daily" | "monthly" | "yearly" | "chart";
 
@@ -48,13 +49,14 @@ export default function Home() {
         <button
           onClick={() => setShowCsvPanel((v) => !v)}
           aria-expanded={showCsvPanel}
-          className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${
+          aria-label="CSV設定を開く"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition ${
             showCsvPanel
-              ? "border-emerald-600 bg-emerald-600 text-white"
-              : "border-neutral-300 dark:border-neutral-700"
+              ? "bg-emerald-600 text-white"
+              : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
           }`}
         >
-          CSV
+          <ImportIcon />
         </button>
       </header>
 
