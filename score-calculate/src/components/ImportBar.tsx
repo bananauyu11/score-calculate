@@ -158,10 +158,6 @@ export default function ImportBar({ records, onImport, onClear }: Props) {
       </div>
 
       {message && <p className="mt-3 text-sm text-neutral-500">{message}</p>}
-
-      <p className="mt-4 text-xs leading-relaxed text-neutral-400">
-        データはこの端末のブラウザ内（localStorage）にのみ保存されます。取り込んだCSVは既存データに追記され、同一の賭けは重複としてスキップされます。
-      </p>
     </div>
   );
 }

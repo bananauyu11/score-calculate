@@ -53,7 +53,7 @@ export default function Home() {
           >
             <BackIcon />
           </button>
-          <h1 className="text-xl font-bold">CSV設定</h1>
+          <h1 className="text-xl font-bold">CSV連携</h1>
         </header>
 
         <ImportBar records={records} onImport={handleImport} onClear={handleClear} />
@@ -67,7 +67,7 @@ export default function Home() {
         <h1 className="text-xl font-bold">競馬 収支管理</h1>
         <button
           onClick={() => setShowCsvPanel(true)}
-          aria-label="CSV設定を開く"
+          aria-label="CSV連携を開く"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
         >
           <ImportIcon />
