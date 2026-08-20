@@ -22,6 +22,7 @@ export default function Home() {
   const [records, setRecords] = useState<BetRecord[]>([]);
   const [tab, setTab] = useState<Tab>("daily");
   const [loaded, setLoaded] = useState(false);
+  const [showCsvPanel, setShowCsvPanel] = useState(false);
 
   useEffect(() => {
     setRecords(loadRecords());
@@ -42,11 +43,29 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-4 p-4 pb-12">
-      <header>
+      <header className="flex items-center justify-between">
         <h1 className="text-xl font-bold">競馬 収支管理</h1>
+        <button
+          onClick={() => setShowCsvPanel((v) => !v)}
+          aria-expanded={showCsvPanel}
+          className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${
+            showCsvPanel
+              ? "border-emerald-600 bg-emerald-600 text-white"
+              : "border-neutral-300 dark:border-neutral-700"
+          }`}
+        >
+          CSV
+        </button>
       </header>
 
-      <ImportBar records={records} onImport={handleImport} onClear={handleClear} />
+      {showCsvPanel && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setShowCsvPanel(false)} />
+          <div className="relative z-20">
+            <ImportBar records={records} onImport={handleImport} onClear={handleClear} />
+          </div>
+        </>
+      )}
 
       <nav className="flex gap-1 rounded-xl bg-neutral-100 p-1 dark:bg-neutral-900">
         {TABS.map((t) => (
