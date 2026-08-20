@@ -1,13 +1,47 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { parseCsv, toCsv } from "@/lib/csv";
 import { BetRecord } from "@/lib/types";
+import { ExportIcon, ImportIcon, SampleIcon, TrashIcon } from "./icons";
 
 interface Props {
   records: BetRecord[];
   onImport: (records: BetRecord[]) => { added: number; skipped: number };
   onClear: () => void;
+}
+
+function PillButton({
+  icon,
+  badgeClass,
+  label,
+  onClick,
+  disabled,
+  danger,
+}: {
+  icon: ReactNode;
+  badgeClass: string;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium disabled:opacity-40 ${
+        danger
+          ? "border-red-200 text-red-600 dark:border-red-900/60 dark:text-red-400"
+          : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200"
+      }`}
+    >
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${badgeClass}`}>
+        {icon}
+      </span>
+      {label}
+    </button>
+  );
 }
 
 export default function ImportBar({ records, onImport, onClear }: Props) {
@@ -75,47 +109,60 @@ export default function ImportBar({ records, onImport, onClear }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-      <div className="flex flex-wrap gap-2">
-        <button
+    <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <h2 className="text-lg font-bold">CSV設定</h2>
+      <p className="mt-1 text-sm text-neutral-400">登録件数: {records.length}件</p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <PillButton
+          icon={<ImportIcon className="text-emerald-600 dark:text-emerald-400" />}
+          badgeClass="bg-emerald-100 dark:bg-emerald-900/40"
+          label="インポート"
           onClick={() => inputRef.current?.click()}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white active:bg-emerald-700"
-        >
-          CSVを取り込む
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFile(file);
-            e.target.value = "";
-          }}
         />
-        <button
+        <PillButton
+          icon={<ExportIcon className="text-sky-600 dark:text-sky-400" />}
+          badgeClass="bg-sky-100 dark:bg-sky-900/40"
+          label="エクスポート"
           onClick={handleExport}
           disabled={records.length === 0}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium disabled:opacity-40 dark:border-neutral-700"
-        >
-          CSVを書き出す
-        </button>
-        <button
+        />
+        <PillButton
+          icon={<SampleIcon className="text-amber-600 dark:text-amber-400" />}
+          badgeClass="bg-amber-100 dark:bg-amber-900/40"
+          label="サンプルデータを試す"
           onClick={handleSample}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-700"
-        >
-          サンプルデータを試す
-        </button>
-        <button
+        />
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+          e.target.value = "";
+        }}
+      />
+
+      <div className="mt-3">
+        <PillButton
+          icon={<TrashIcon className="text-red-600 dark:text-red-400" />}
+          badgeClass="bg-red-100 dark:bg-red-900/40"
+          label="初期化"
           onClick={handleClear}
           disabled={records.length === 0}
-          className="ml-auto rounded-lg px-4 py-2 text-sm font-medium text-red-600 disabled:opacity-40"
-        >
-          全データ削除
-        </button>
+          danger
+        />
       </div>
-      {message && <p className="text-sm text-neutral-500">{message}</p>}
+
+      {message && <p className="mt-3 text-sm text-neutral-500">{message}</p>}
+
+      <p className="mt-4 text-xs leading-relaxed text-neutral-400">
+        データはこの端末のブラウザ内（localStorage）にのみ保存されます。取り込んだCSVは既存データに追記され、同一の賭けは重複としてスキップされます。
+      </p>
     </div>
   );
 }
