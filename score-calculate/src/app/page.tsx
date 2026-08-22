@@ -104,7 +104,7 @@ export default function Home() {
             onClick={closeCsvPanel}
           />
           <div
-            className={`absolute inset-x-0 bottom-0 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-2xl transition-transform duration-300 ease-out dark:bg-neutral-900 ${
+            className={`absolute inset-x-0 bottom-0 top-16 overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-2xl transition-transform duration-300 ease-out dark:bg-neutral-900 ${
               csvPanelOpen ? "translate-y-0" : "translate-y-full"
             }`}
           >
